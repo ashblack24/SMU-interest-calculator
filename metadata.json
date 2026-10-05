@@ -1,0 +1,6 @@
+{
+  "name": "SORA Interest Calculator | MAS Singapore Overnight Rate Engine",
+  "description": "Singapore SORA mortgage and interest payment calculator with MAS overnight rate integration, ACT/365 compounding, TDSR/MSR checks, and amortization schedules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
