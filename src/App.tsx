@@ -150,6 +150,60 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  const handleExportMarkdown = () => {
+    const mdLines = [
+      '# Singapore SORA Mortgage Calculation Report',
+      '',
+      `> Generated on: ${new Date().toISOString()} via Singapore SORA Financial Engine`,
+      `> Benchmark Authority: Monetary Authority of Singapore (MAS)`,
+      '',
+      '## 1. Executive Summary',
+      '',
+      `- **Loan Principal**: ${formatSGD(loanParams.loanAmount)}`,
+      `- **Loan Tenure**: ${loanParams.tenureYears} Years (${loanParams.tenureYears * 12} Monthly Installments)`,
+      `- **Benchmark SORA Metric**: ${loanParams.rateType.replace('_', ' ').toUpperCase()} (${calculationResult.baseRate.toFixed(4)}% p.a.)`,
+      `- **Bank Spread**: +${calculationResult.spread.toFixed(2)}% p.a.`,
+      `- **Effective Initial Rate**: ${calculationResult.effectiveRate.toFixed(4)}% p.a.`,
+      `- **Day Count Convention**: ${loanParams.dayCountConvention} (Singapore Standard)`,
+      `- **Monthly Installment**: **${formatSGD(calculationResult.monthlyInstallment, true)} / month**`,
+      `- **Total Interest Payable**: ${formatSGD(calculationResult.totalInterestPaid, true)}`,
+      `- **Total Cumulative Repayment**: ${formatSGD(calculationResult.totalPayment, true)}`,
+      `- **MAS Regulatory Stress Test (4.00% Floor)**: ${formatSGD(calculationResult.stressTestInstallment, true)} / month`,
+      '',
+      '## 2. Benchmark Reference Rates (MAS Statistical Bulletin)',
+      '',
+      `| Metric | Rate (% p.a.) | Publication Reference |`,
+      `| :--- | :--- | :--- |`,
+      `| Daily SORA | ${latestRecord.sora.toFixed(4)}% | Published 9:00 AM SGT |`,
+      `| 1-Month Compounded SORA | ${latestRecord.sora_compound_1m.toFixed(4)}% | Rolling 1M ACT/365 |`,
+      `| 3-Month Compounded SORA | ${latestRecord.sora_compound_3m.toFixed(4)}% | Industry Standard |`,
+      `| 6-Month Compounded SORA | ${latestRecord.sora_compound_6m.toFixed(4)}% | Rolling 6M ACT/365 |`,
+      `| MAS SORA Index | ${latestRecord.sora_index ? latestRecord.sora_index.toFixed(5) : 'N/A'} | Compounding Index |`,
+      '',
+      '## 3. Full Amortization Schedule',
+      '',
+      '| Month | Date | Payment (SGD) | Principal (SGD) | Interest (SGD) | Remaining Balance (SGD) |',
+      '| :---: | :---: | :---: | :---: | :---: | :---: |',
+      ...calculationResult.monthlySchedule.map(
+        (m) =>
+          `| ${m.period} | ${m.date} | $${m.monthlyInstallment.toFixed(2)} | $${m.principalPaid.toFixed(2)} | $${m.interestPaid.toFixed(2)} | $${m.remainingBalance.toFixed(2)} |`
+      ),
+      '',
+      '---',
+      '*Notice: Interest calculations follow standard MAS ACT/365 day count convention. Regulatory stress testing complies with MAS Notice 645 Total Debt Servicing Ratio (TDSR) guidelines.*',
+    ];
+
+    const blob = new Blob([mdLines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sora_mortgage_report_${loanParams.loanAmount}_sgd.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Top Header */}
@@ -181,7 +235,7 @@ export default function App() {
 
           <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
             <span>
-              Header: <span className="text-slate-200">KeyId: {masConfig.apiKey || '&lt;MAS_KEY_ID&gt;'}</span>
+              Header: <span className="text-slate-200">KeyId: {masConfig.apiKey || '<MAS_KEY_ID>'}</span>
             </span>
             <button
               onClick={() => setIsMasModalOpen(true)}
@@ -203,6 +257,7 @@ export default function App() {
               result={calculationResult}
               params={loanParams}
               onExportCsv={handleExportCsv}
+              onExportMarkdown={handleExportMarkdown}
             />
 
             {/* Two-Column Workspace */}

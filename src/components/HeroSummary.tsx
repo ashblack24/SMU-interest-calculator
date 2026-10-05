@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Copy, Check, ShieldCheck, ArrowRight, Printer } from 'lucide-react';
+import { Download, Copy, Check, ShieldCheck, ArrowRight, Printer, FileText } from 'lucide-react';
 import { CalculationResult, LoanParameters } from '../types/sora';
 import { formatSGD } from '../utils/soraMath';
 
@@ -7,12 +7,14 @@ interface HeroSummaryProps {
   result: CalculationResult;
   params: LoanParameters;
   onExportCsv: () => void;
+  onExportMarkdown?: () => void;
 }
 
 export const HeroSummary: React.FC<HeroSummaryProps> = ({
   result,
   params,
   onExportCsv,
+  onExportMarkdown,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -55,7 +57,7 @@ Generated via SORA Engine`;
           </h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleCopySummary}
@@ -64,6 +66,17 @@ Generated via SORA Engine`;
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
+          {onExportMarkdown && (
+            <button
+              type="button"
+              onClick={onExportMarkdown}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              title="Export as Markdown (.md)"
+            >
+              <FileText className="w-3.5 h-3.5 text-slate-700" />
+              <span>Export .MD</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onExportCsv}
