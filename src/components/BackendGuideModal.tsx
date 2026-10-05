@@ -18,16 +18,16 @@ export const BackendGuideModal: React.FC<BackendGuideModalProps> = ({
 
   if (!isOpen) return null;
 
-  const keyPlaceholder = config.apiKey || '6dd53166-b3e4-4816-ab66-5a8f584ae690';
+  const keyPlaceholder = config.apiKey || '<MAS_KEY_ID>';
 
   const snippets = {
-    express: `// Express / Node.js Backend Proxy for MAS SORA Rates
-// Handles CORS and forwards the mandatory "KeyId" header
+    express: `// Express / Node.js Serverless Proxy for MAS SORA Rates (/api/sora.ts)
+// Reads MAS_KEY_ID from environment and forwards the mandatory "KeyId" header
 import express from 'express';
 
 const app = express();
 const MAS_KEY_ID = process.env.MAS_KEY_ID || '${keyPlaceholder}';
-const MAS_URL = 'https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=9a0bf149-3083-461a-aec7-0eb6491c6372&limit=30';
+const MAS_URL = 'https://eservices.mas.gov.sg/apimg-gw/server/monthly_statistical_bulletin_non610mssql/domestic_interest_rates_daily/views/domestic_interest_rates_daily?$orderby=end_of_day%20desc&$top=30';
 
 app.get('/api/sora', async (req, res) => {
   try {
@@ -35,7 +35,7 @@ app.get('/api/sora', async (req, res) => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'KeyId': MAS_KEY_ID, // <-- Mandatory MAS header
+        'KeyId': MAS_KEY_ID, // <-- Mandatory MAS header (KeyId: <MAS_KEY_ID>)
       },
     });
 
@@ -47,14 +47,14 @@ app.get('/api/sora', async (req, res) => {
 
     const data = await response.json();
     res.json(data);
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });`,
 
     curl: `# cURL Command testing MAS SORA Endpoint with KeyId
 curl -X GET \\
-  "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=9a0bf149-3083-461a-aec7-0eb6491c6372&limit=10" \\
+  "https://eservices.mas.gov.sg/apimg-gw/server/monthly_statistical_bulletin_non610mssql/domestic_interest_rates_daily/views/domestic_interest_rates_daily?\\$orderby=end_of_day%20desc&\\$top=10" \\
   -H "Accept: application/json" \\
   -H "KeyId: ${keyPlaceholder}"`,
 
@@ -65,28 +65,35 @@ from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
 MAS_KEY_ID = os.getenv("MAS_KEY_ID", "${keyPlaceholder}")
-MAS_URL = "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=9a0bf149-3083-461a-aec7-0eb6491c6372&limit=30"
+MAS_URL = "https://eservices.mas.gov.sg/apimg-gw/server/monthly_statistical_bulletin_non610mssql/domestic_interest_rates_daily/views/domestic_interest_rates_daily"
 
 @app.get("/api/sora")
-def get_sora_rates():
+def get_sora_rates(limit: int = 30):
     headers = {
         "Accept": "application/json",
         "KeyId": MAS_KEY_ID,  # Mandatory MAS Header
     }
-    response = requests.get(MAS_URL, headers=headers)
+    params = {
+        "$orderby": "end_of_day desc",
+        "$top": limit,
+    }
+    response = requests.get(MAS_URL, headers=headers, params=params)
     if not response.ok:
         raise HTTPException(status_code=response.status_code, detail="MAS API Error")
     return response.json()`,
 
     fetch: `// Standard JavaScript Fetch with KeyId header
-const masKeyId = '${keyPlaceholder}';
-const response = await fetch('https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=9a0bf149-3083-461a-aec7-0eb6491c6372&limit=30', {
-  method: 'GET',
-  headers: {
-    'Accept': 'application/json',
-    'KeyId': masKeyId, // Required header
-  },
-});
+const masKeyId = process.env.MAS_KEY_ID || '${keyPlaceholder}';
+const response = await fetch(
+  'https://eservices.mas.gov.sg/apimg-gw/server/monthly_statistical_bulletin_non610mssql/domestic_interest_rates_daily/views/domestic_interest_rates_daily?$orderby=end_of_day%20desc&$top=30',
+  {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'KeyId': masKeyId, // Required header
+    },
+  }
+);
 const data = await response.json();
 console.log('MAS SORA Rates:', data);`,
   };
