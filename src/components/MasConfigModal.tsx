@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Key, Globe, Check, AlertCircle, RefreshCw, Copy, CheckCheck, ShieldAlert } from 'lucide-react';
 import { MASApiConfig } from '../types/sora';
-import { DEFAULT_MAS_ENDPOINT, fetchMasSoraRates } from '../services/masApi';
+import { DEFAULT_MAS_ENDPOINT, DEFAULT_MAS_KEY_ID, fetchMasSoraRates } from '../services/masApi';
 
 interface MasConfigModalProps {
   isOpen: boolean;
@@ -18,7 +18,7 @@ export const MasConfigModal: React.FC<MasConfigModalProps> = ({
   onSaveConfig,
   onSyncComplete,
 }) => {
-  const [apiKey, setApiKey] = useState(config.apiKey || '');
+  const [apiKey, setApiKey] = useState(config.apiKey || DEFAULT_MAS_KEY_ID);
   const [endpointUrl, setEndpointUrl] = useState(config.endpointUrl || DEFAULT_MAS_ENDPOINT);
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<{

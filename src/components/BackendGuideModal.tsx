@@ -18,7 +18,7 @@ export const BackendGuideModal: React.FC<BackendGuideModalProps> = ({
 
   if (!isOpen) return null;
 
-  const keyPlaceholder = config.apiKey || '<YOUR_MAS_KEY_ID>';
+  const keyPlaceholder = config.apiKey || '6dd53166-b3e4-4816-ab66-5a8f584ae690';
 
   const snippets = {
     express: `// Express / Node.js Backend Proxy for MAS SORA Rates

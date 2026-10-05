@@ -324,6 +324,7 @@ export const FALLBACK_MAS_RECORDS: MASRateRecord[] = [
   }
 ];
 
+export const DEFAULT_MAS_KEY_ID = '6dd53166-b3e4-4816-ab66-5a8f584ae690';
 export const DEFAULT_MAS_ENDPOINT = 'https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=9a0bf149-3083-461a-aec7-0eb6491c6372&limit=30';
 
 const STORAGE_KEY_API = 'sora_mas_api_config';
@@ -335,6 +336,7 @@ export function loadMasConfig(): MASApiConfig {
       const parsed = JSON.parse(raw);
       return {
         ...parsed,
+        apiKey: parsed.apiKey && parsed.apiKey.trim() !== '' ? parsed.apiKey : DEFAULT_MAS_KEY_ID,
         status: parsed.status || 'idle',
       };
     }
@@ -343,7 +345,7 @@ export function loadMasConfig(): MASApiConfig {
   }
 
   return {
-    apiKey: '',
+    apiKey: DEFAULT_MAS_KEY_ID,
     endpointUrl: DEFAULT_MAS_ENDPOINT,
     useFallbackData: true,
     lastFetchedAt: null,
@@ -375,13 +377,11 @@ export interface FetchResult {
  * it returns diagnostic data and falls back gracefully to official benchmark records.
  */
 export async function fetchMasSoraRates(config: MASApiConfig): Promise<FetchResult> {
+  const activeKey = config.apiKey && config.apiKey.trim() !== '' ? config.apiKey.trim() : DEFAULT_MAS_KEY_ID;
   const requestHeadersSent: Record<string, string> = {
     'Accept': 'application/json',
+    'KeyId': activeKey,
   };
-
-  if (config.apiKey && config.apiKey.trim() !== '') {
-    requestHeadersSent['KeyId'] = config.apiKey.trim();
-  }
 
   // If user selected strict fallback or left blank
   if (!config.endpointUrl || config.endpointUrl.trim() === '') {
